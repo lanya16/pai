@@ -394,6 +394,9 @@ class Job {
   }
 
   extractContainerStderr(diag) {
+    if (_.isEmpty(diag)) {
+      return null;
+    }
     const anchor1 = /ExitCodeException exitCode.*?:/;
     const anchor2 = /at org\.apache\.hadoop\.util\.Shell\.runCommand/;
     const match1 = diag.match(anchor1);
@@ -406,6 +409,9 @@ class Job {
   }
 
   extractRuntimeOutput(diag) {
+    if (_.isEmpty(diag)) {
+      return null;
+    }
     const anchor1 = /\[PAI_RUNTIME_ERROR_START\]/;
     const anchor2 = /\[PAI_RUNTIME_ERROR_END\]/;
     const match1 = diag.match(anchor1);
