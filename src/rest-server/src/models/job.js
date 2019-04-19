@@ -461,12 +461,13 @@ class Job {
         appExitCode: frameworkStatus.applicationExitCode,
         appExitSpec: this.generateExitInfo(frameworkStatus.applicationExitCode),
         appExitMessages: {
-          contaierStderr: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
-          runtimeError: this.extractRuntimeOutput(frameworkStatus.applicationExitDiagnostics),
+          contaier: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
+          runtime: this.extractRuntimeOutput(frameworkStatus.applicationExitDiagnostics),
         },
         appExitTriggerMessage: frameworkStatus.applicationExitTriggerMessage,
         appExitTriggerTaskRoleName: frameworkStatus.applicationExitTriggerTaskRoleName,
         appExitTriggerTaskRoleIndex: frameworkStatus.applicationExitTriggerTaskRoleIndex,
+        // deprecated
         appExitDiagnostics: frameworkStatus.applicationExitDiagnostics,
         appExitType: frameworkStatus.applicationExitType,
       };

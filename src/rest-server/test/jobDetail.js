@@ -232,8 +232,8 @@ describe('JobDetail ExitSpec', () => {
         expect(res, 'status code').to.have.status(200);
         expect(res, 'json response').be.json;
         expect(res.body).to.nested.include({
-          'jobStatus.appExitMessages.contaierStderr': 'Message1',
-          'jobStatus.appExitMessages.runtimeError.exitCode': 255,
+          'jobStatus.appExitMessages.container': 'Message1',
+          'jobStatus.appExitMessages.runtime.exitCode': 255,
         });
         done();
       });
