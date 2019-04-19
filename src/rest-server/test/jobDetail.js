@@ -15,6 +15,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+const Const = require('../src/util/const');
+
 // test
 describe('JobDetail API /api/v1/user/:username/jobs/:jobName', () => {
   after(function() {
@@ -185,6 +187,7 @@ describe('JobDetail API /api/v1/jobs/:jobName', () => {
 
 describe('JobDetail ExitSpec', () => {
   after(function() {
+    delete process.env[Const.exitSpecEnv];
     if (!nock.isDone()) {
       nock.cleanAll();
       throw new Error('Not all nock interceptors were used!');
@@ -193,6 +196,10 @@ describe('JobDetail ExitSpec', () => {
 
   // Mock launcher webservice
   before(() => {
+    process.env[Const.exitSpecEnv] = `
+    - code: 255
+      type: test_type
+    `;
     nock(launcherWebserviceUri)
       .get('/v1/Frameworks/test_job')
       .reply(200, mustache.render(
@@ -244,8 +251,10 @@ describe('JobDetail ExitSpec', () => {
       .end((err, res) => {
         expect(res, 'status code').to.have.status(200);
         expect(res, 'json response').be.json;
-        expect(res.body).to.have.nested.property('jobStatus.appStaticExitInfo.code');
-        expect(res.body).to.have.nested.property('jobStatus.appStaticExitInfo.type');
+        expect(res.body).to.have.nested.include({
+          'jobStatus.appStaticExitInfo.code': 255,
+          'jobStatus.appStaticExitInfo.type': 'test_type',
+        });
         done();
       });
   });

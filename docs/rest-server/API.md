@@ -458,6 +458,7 @@ Status: 200
     appExitCode: applicationExitCode,
     appExitDiagnostics: "applicationExitDiagnostics",
     appExitType: "applicationExitType",
+    appExitSpec: exitSpecObject,
     appExitTriggerMessage: "applicationExitTriggerMessage",
     appExitTriggerTaskRoleName: "applicationExitTriggerTaskRoleName",
     appExitTriggerTaskRoleIndex: "applicationExitTriggerTaskRoleIndex", 

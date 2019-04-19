@@ -33,8 +33,10 @@ const logger = require('../config/logger');
 const Hdfs = require('../util/hdfs');
 const azureEnv = require('../config/azure');
 const paiConfig = require('../config/paiConfig');
+const Const = require('../util/const');
 
-const exitInfoList = yaml.safeLoad(fs.readFileSync('/job-exit-spec-config/job-exit-spec.yaml'));
+const envName = Const.exitSpecEnv;
+const exitInfoList = yaml.safeLoad(process.env[envName] || fs.readFileSync('/job-exit-spec-configuration/job-exit-spec.yaml'));
 const positiveFallbackExitCode = 256;
 const negativeFallbackExitCode = -8000;
 const exitInfoMap = {};
@@ -452,16 +454,16 @@ class Job {
         appLaunchedTime: frameworkStatus.applicationLaunchedTimestamp,
         appCompletedTime: frameworkStatus.applicationCompletedTimestamp,
         appExitCode: frameworkStatus.applicationExitCode,
-        appExitDiagnostics: frameworkStatus.applicationExitDiagnostics,
+        appExitSpec: this.generateExitInfo(frameworkStatus.applicationExitCode),
         appExitMessages: {
           contaierStderr: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
           runtimeError: this.extractRuntimeOutput(frameworkStatus.applicationExitDiagnostics),
         },
-        appExitType: frameworkStatus.applicationExitType,
         appExitTriggerMessage: frameworkStatus.applicationExitTriggerMessage,
         appExitTriggerTaskRoleName: frameworkStatus.applicationExitTriggerTaskRoleName,
         appExitTriggerTaskRoleIndex: frameworkStatus.applicationExitTriggerTaskRoleIndex,
-        appStaticExitInfo: this.generateExitInfo(frameworkStatus.applicationExitCode),
+        appExitDiagnostics: frameworkStatus.applicationExitDiagnostics,
+        appExitType: frameworkStatus.applicationExitType,
       };
     }
     const frameworkRequest = framework.aggregatedFrameworkRequest.frameworkRequest;
