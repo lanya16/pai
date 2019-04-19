@@ -33,10 +33,9 @@ const logger = require('../config/logger');
 const Hdfs = require('../util/hdfs');
 const azureEnv = require('../config/azure');
 const paiConfig = require('../config/paiConfig');
-const Const = require('../util/const');
+const env = require('../util/env');
 
-const envName = Const.exitSpecEnv;
-const exitInfoList = yaml.safeLoad(process.env[envName] || fs.readFileSync('/job-exit-spec-configuration/job-exit-spec.yaml'));
+const exitInfoList = yaml.safeLoad(process.env[env.exitSpec] || fs.readFileSync('/job-exit-spec-configuration/job-exit-spec.yaml'));
 const positiveFallbackExitCode = 256;
 const negativeFallbackExitCode = -8000;
 const exitInfoMap = {};

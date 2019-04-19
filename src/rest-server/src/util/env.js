@@ -17,5 +17,5 @@
 
 
 module.exports = {
-  exitSpecEnv: 'PAI_REST_SERVER_EXIT_SPEC',
+  exitSpec: 'PAI_REST_SERVER_EXIT_SPEC',
 };

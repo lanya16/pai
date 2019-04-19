@@ -15,7 +15,6 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const Const = require('../src/util/const');
 
 // test
 describe('JobDetail API /api/v1/user/:username/jobs/:jobName', () => {
@@ -187,7 +186,6 @@ describe('JobDetail API /api/v1/jobs/:jobName', () => {
 
 describe('JobDetail ExitSpec', () => {
   after(function() {
-    delete process.env[Const.exitSpecEnv];
     if (!nock.isDone()) {
       nock.cleanAll();
       throw new Error('Not all nock interceptors were used!');
@@ -196,10 +194,6 @@ describe('JobDetail ExitSpec', () => {
 
   // Mock launcher webservice
   before(() => {
-    process.env[Const.exitSpecEnv] = `
-    - code: 255
-      type: test_type
-    `;
     nock(launcherWebserviceUri)
       .get('/v1/Frameworks/test_job')
       .reply(200, mustache.render(
