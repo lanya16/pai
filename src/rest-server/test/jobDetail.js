@@ -68,7 +68,7 @@ describe('JobDetail API /api/v1/user/:username/jobs/:jobName', () => {
         expect(res, 'status code').to.have.status(200);
         expect(res, 'json response').be.json;
         expect(res.body).to.have.property('name', 'test_job');
-        expect(res.body).to.nested.include({ 'jobStatus.virtualCluster': 'vc3' });
+        expect(res.body).to.nested.include({'jobStatus.virtualCluster': 'vc3'});
         done();
       });
   });
@@ -96,7 +96,6 @@ describe('JobDetail API /api/v1/user/:username/jobs/:jobName', () => {
         done();
       });
   });
-
 });
 
 describe('JobDetail API /api/v1/jobs/:jobName', () => {
@@ -125,7 +124,7 @@ describe('JobDetail API /api/v1/jobs/:jobName', () => {
       .get('/v1/Frameworks/test_job2')
       .reply(404, {
         'error': 'JobNotFound',
-        'message': 'could not find job test_job2'
+        'message': 'could not find job test_job2',
       });
 
     nock(launcherWebserviceUri)
@@ -182,5 +181,72 @@ describe('JobDetail API /api/v1/jobs/:jobName', () => {
         done();
       });
   });
+});
 
+describe('JobDetail ExitSpec', () => {
+  after(function() {
+    if (!nock.isDone()) {
+      nock.cleanAll();
+      throw new Error('Not all nock interceptors were used!');
+    }
+  });
+
+  // Mock launcher webservice
+  before(() => {
+    nock(launcherWebserviceUri)
+      .get('/v1/Frameworks/test_job')
+      .reply(200, mustache.render(
+        frameworkDetailTemplate,
+        {
+          'aggregatedFrameworkStatus': {
+            frameworkStatus: {
+              applicationExitCode: 255,
+              applicationExitDiagnostics: `
+                [2019-01-01 00:00:00]Exception from container-launch:
+                ExitCodeException exitCode=255: Message1
+                  at org.apache.hadoop.util.Shell.runCommand(Shell.java:998)
+                [2019-01-01 00:00:00]Container exited with a non-zero exit code 255. Last 40960 bytes of runtime.pai.agg.error :
+                [PAI_RUNTIME_ERROR_START]
+                  exitcode: 255
+                [PAI_RUNTIME_ERROR_END]
+              `,
+            },
+          },
+          'frameworkName': 'test_job',
+          'userName': 'test',
+          'queueName': 'vc3',
+          'applicationId': 'test_job',
+        }
+      ));
+  });
+
+  //
+  // Positive cases
+  //
+
+  it('[P-01] Should return exit messages', (done) => {
+    chai.request(server)
+      .get('/api/v1/jobs/test_job')
+      .end((err, res) => {
+        expect(res, 'status code').to.have.status(200);
+        expect(res, 'json response').be.json;
+        expect(res.body).to.nested.include({
+          'jobStatus.appExitMessages.contaierStderr': 'Message1',
+          'jobStatus.appExitMessages.runtimeError.exitCode': 255,
+        });
+        done();
+      });
+  });
+
+  it('[P-02] Should return static exit info', (done) => {
+    chai.request(server)
+      .get('/api/v1/jobs/test_job')
+      .end((err, res) => {
+        expect(res, 'status code').to.have.status(200);
+        expect(res, 'json response').be.json;
+        expect(res.body).to.have.nested.property('jobStatus.appStaticExitInfo.code');
+        expect(res.body).to.have.nested.property('jobStatus.appStaticExitInfo.type');
+        done();
+      });
+  });
 });

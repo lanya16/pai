@@ -456,8 +456,16 @@ Status: 200
     appLaunchedTime: "applicationLaunchedTimestamp",
     appCompletedTime: "applicationCompletedTimestamp",
     appExitCode: applicationExitCode,
-    appExitDiagnostics: "applicationExitDiagnostics"
-    appExitType: "applicationExitType"
+    appExitDiagnostics: "applicationExitDiagnostics",
+    appExitType: "applicationExitType",
+    appExitTriggerMessage: "applicationExitTriggerMessage",
+    appExitTriggerTaskRoleName: "applicationExitTriggerTaskRoleName",
+    appExitTriggerTaskRoleIndex: "applicationExitTriggerTaskRoleIndex", 
+    // exit messages extracted from exitDiagnostics
+    appExitMessages: {
+      contaierStderr: "containerStder",
+      runtimeError: runtimeScriptErrorObject,
+    },
   },
   taskRoles: {
     // Name-details map

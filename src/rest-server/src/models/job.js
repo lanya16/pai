@@ -19,7 +19,6 @@
 // module dependencies
 const async = require('async');
 const fs = require('fs');
-const path = require('path');
 const unirest = require('unirest');
 const _ = require('lodash');
 const mustache = require('mustache');
@@ -35,7 +34,9 @@ const Hdfs = require('../util/hdfs');
 const azureEnv = require('../config/azure');
 const paiConfig = require('../config/paiConfig');
 
-const exitInfoList = yaml.safeLoad(fs.readFileSync(path.resolve(__dirname, '../../exitInfo.yaml')));
+const exitInfoList = yaml.safeLoad(fs.readFileSync('/job-exit-spec-config/job-exit-spec.yaml'));
+const positiveFallbackExitCode = 256;
+const negativeFallbackExitCode = -8000;
 const exitInfoMap = {};
 exitInfoList.forEach((val) => {
   exitInfoMap[val.code] = val;
@@ -376,33 +377,43 @@ class Job {
       } else {
         if (code > 0) {
           return {
+            ...exitInfoMap[positiveFallbackExitCode],
             code,
-            phrase: 'PCR Exit Abnormally',
-            issuer: 'Runtime',
-            causer: 'PlatormSW',
-            type: 'PlatormFailure',
-            stage: 'Run',
-            behavior: 'Unknown',
-            reaction: 'RetryToMax',
-            reason: 'PCR Exit Abnormally. It may have bug.',
-            solution: 'Contact Dev to fix this bug',
           };
         } else {
           return {
+            ...exitInfoMap[negativeFallbackExitCode],
             code,
-            phrase: 'FL Unrecognized YARN Container ExitCode',
-            issuer: 'YARN',
-            causer: 'Unknown',
-            type: 'Unknown',
-            stage: 'Run',
-            behavior: 'Unknown',
-            reaction: 'RetryToMax',
-            solution: 'Contact Dev to recognize this ExitCode',
           };
         }
       }
     } else {
       return null;
+    }
+  }
+
+  extractContainerStderr(diag) {
+    const anchor1 = /ExitCodeException exitCode.*?:/;
+    const anchor2 = /at org\.apache\.hadoop\.util\.Shell\.runCommand/;
+    const match1 = diag.match(anchor1);
+    const match2 = diag.match(anchor2);
+    if (match1 !== null && match2 !== null) {
+      const start = match1.index + match1[0].length;
+      const end = match2.index;
+      return diag.substring(start, end).trim();
+    }
+  }
+
+  extractRuntimeOutput(diag) {
+    const anchor1 = /\[PAI_RUNTIME_ERROR_START\]/;
+    const anchor2 = /\[PAI_RUNTIME_ERROR_END\]/;
+    const match1 = diag.match(anchor1);
+    const match2 = diag.match(anchor2);
+    if (match1 !== null && match2 !== null) {
+      const start = match1.index + match1[0].length;
+      const end = match2.index;
+      const output = diag.substring(start, end).trim();
+      return yaml.safeLoad(output);
     }
   }
 
@@ -442,7 +453,14 @@ class Job {
         appCompletedTime: frameworkStatus.applicationCompletedTimestamp,
         appExitCode: frameworkStatus.applicationExitCode,
         appExitDiagnostics: frameworkStatus.applicationExitDiagnostics,
+        appExitMessages: {
+          contaierStderr: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
+          runtimeError: this.extractRuntimeOutput(frameworkStatus.applicationExitDiagnostics),
+        },
         appExitType: frameworkStatus.applicationExitType,
+        appExitTriggerMessage: frameworkStatus.applicationExitTriggerMessage,
+        appExitTriggerTaskRoleName: frameworkStatus.applicationExitTriggerTaskRoleName,
+        appExitTriggerTaskRoleIndex: frameworkStatus.applicationExitTriggerTaskRoleIndex,
         appStaticExitInfo: this.generateExitInfo(frameworkStatus.applicationExitCode),
       };
     }
