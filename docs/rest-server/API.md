@@ -458,7 +458,7 @@ Status: 200
     appExitCode: applicationExitCode,
     appExitDiagnostics: "applicationExitDiagnostics",
     appExitType: "applicationExitType",
-    // please check https://github.com/Microsoft/pai/blob/errorspec/src/job-exit-spec/config/job-exit-spec.md for more information
+    // please check https://github.com/Microsoft/pai/blob/master/src/job-exit-spec/config/job-exit-spec.md for more information
     appExitSpec: exitSpecObject,
     appExitTriggerMessage: "applicationExitTriggerMessage",
     appExitTriggerTaskRoleName: "applicationExitTriggerTaskRoleName",
@@ -466,6 +466,7 @@ Status: 200
     // exit messages extracted from exitDiagnostics
     appExitMessages: {
       contaier: "containerStderr",
+      // please check https://github.com/Microsoft/pai/blob/master/docs/rest-server/runtime-exit-spec.md for more information
       runtime: runtimeScriptErrorObject,
       launcher: "launcherExitMessage"
     },

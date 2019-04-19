@@ -424,6 +424,14 @@ class Job {
     }
   }
 
+  extractLauncherOutput(diag) {
+    if (_.isEmpty(diag)) {
+      return null;
+    }
+    const re = /\[PAI_RUNTIME_ERROR_START\](.*?)\[PAI_RUNTIME_ERROR_END\]/;
+    return diag.replace(re, '');
+  }
+
   generateJobDetail(framework) {
     let jobDetail = {
       'jobStatus': {},
@@ -461,8 +469,9 @@ class Job {
         appExitCode: frameworkStatus.applicationExitCode,
         appExitSpec: this.generateExitInfo(frameworkStatus.applicationExitCode),
         appExitMessages: {
-          contaier: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
+          container: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
           runtime: this.extractRuntimeOutput(frameworkStatus.applicationExitDiagnostics),
+          launcher: this.extractLauncherOutput(frameworkStatus.applicationExitDiagnostics),
         },
         appExitTriggerMessage: frameworkStatus.applicationExitTriggerMessage,
         appExitTriggerTaskRoleName: frameworkStatus.applicationExitTriggerTaskRoleName,
