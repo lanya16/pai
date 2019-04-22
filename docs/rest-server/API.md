@@ -462,7 +462,7 @@ Status: 200
     appExitSpec: exitSpecObject,
     appExitTriggerMessage: "applicationExitTriggerMessage",
     appExitTriggerTaskRoleName: "applicationExitTriggerTaskRoleName",
-    appExitTriggerTaskRoleIndex: "applicationExitTriggerTaskRoleIndex", 
+    appExitTriggerTaskIndex: "applicationExitTriggerTaskIndex", 
     // exit messages extracted from exitDiagnostics
     appExitMessages: {
       contaier: "containerStderr",

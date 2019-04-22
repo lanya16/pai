@@ -475,7 +475,7 @@ class Job {
         },
         appExitTriggerMessage: frameworkStatus.applicationExitTriggerMessage,
         appExitTriggerTaskRoleName: frameworkStatus.applicationExitTriggerTaskRoleName,
-        appExitTriggerTaskRoleIndex: frameworkStatus.applicationExitTriggerTaskRoleIndex,
+        appExitTriggerTaskIndex: frameworkStatus.applicationExitTriggerTaskIndex,
         // deprecated
         appExitDiagnostics: frameworkStatus.applicationExitDiagnostics,
         appExitType: frameworkStatus.applicationExitType,

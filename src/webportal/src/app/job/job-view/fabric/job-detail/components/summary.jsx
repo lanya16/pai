@@ -119,11 +119,11 @@ export default class Summary extends React.Component {
     }
 
     const HintItem = ({header, value}) => (
-      <div>
-        <span className={c(t.w4, t.dib)} style={{fontWeight: FontWeights.semibold}}>
+      <div className={c(t.flex, t.justifyStart)}>
+        <div style={{width: '12rem', fontWeight: FontWeights.semibold}}>
           {header}
-        </span>
-        <span>{value}</span>
+        </div>
+        <div>{value}</div>
       </div>
     );
 
@@ -138,11 +138,11 @@ export default class Summary extends React.Component {
       }
       // trigger task
       const role = jobInfo.jobStatus.appExitTriggerTaskRoleName;
-      const idx = jobInfo.jobStatus.appExitTriggerTaskRoleIndex;
+      const idx = jobInfo.jobStatus.appExitTriggerTaskIndex;
       if (role) {
         result.push(<HintItem key='task-role' header='Task Role:' value={role} />);
       }
-      if (role && idx) {
+      if (role && !isNil(idx)) {
         const containerId = get(jobInfo, `taskRoles.${role}.taskStatuses[${idx}].containerId`);
         if (containerId) {
           result.push(<HintItem key='container-id' header='Container Id:' value={containerId} />);
@@ -154,7 +154,7 @@ export default class Summary extends React.Component {
         // user failure
         if (runtimeOutput) {
           const userCode = runtimeOutput.originalUserExitCode;
-          if (userCode) {
+          if (!isNil(userCode)) {
             result.push(<HintItem key='user-exit-code' header='User Exit Code:' value={userCode} />);
           }
         }
@@ -164,16 +164,36 @@ export default class Summary extends React.Component {
         result.push(<HintItem key='platform-exit-code' header='Platform Exit Code:' value={code} />);
       }
       // reason & solution
-      const reason = [
-        runtimeOutput && runtimeOutput.reason,
-        spec.reason,
-      ];
-      const solution = [
-        runtimeOutput && runtimeOutput.solution,
-        spec.solution,
-      ];
-      result.push(<HintItem key='reason' header='Reason:' value={reason} />);
-      result.push(<HintItem key='solution' header='Solution:' value={solution} />);
+      const reason = [];
+      const solution = [];
+      if (runtimeOutput && runtimeOutput.reason) {
+        reason.push(
+          <div key='runtime-reason'>{runtimeOutput && runtimeOutput.reason}</div>,
+        );
+      }
+      if (runtimeOutput && runtimeOutput.solution) {
+        solution.push(
+          <div key='runtime-solution'>{runtimeOutput && runtimeOutput.solution}</div>,
+        );
+      }
+      if (spec && spec.reason) {
+        reason.push(
+          <div key='spec-reason'>{spec.reason}</div>,
+        );
+      }
+      if (spec && spec.solution) {
+        solution.push(
+          ...spec.solution.map((x, i) => (
+            <div key={`spec-reason-${i}`}>{spec.reason}</div>
+          )),
+        );
+      }
+      if (!isEmpty(reason)) {
+        result.push(<HintItem key='reason' header='Reason:' value={reason} />);
+      }
+      if (!isEmpty(solution)) {
+        result.push(<HintItem key='solution' header='Solution:' value={solution} />);
+      }
 
       return (
         <MessageBar messageBarType={MessageBarType.error}>
