@@ -439,7 +439,7 @@ class Job {
       return null;
     }
     const re = /\[PAI_RUNTIME_ERROR_START\](.*?)\[PAI_RUNTIME_ERROR_END\]/;
-    return diag.replace(re, '');
+    return diag.replace(re, '').trim();
   }
 
   generateJobDetail(framework) {
