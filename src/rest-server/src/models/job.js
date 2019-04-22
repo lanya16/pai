@@ -438,7 +438,7 @@ class Job {
     if (_.isEmpty(diag)) {
       return null;
     }
-    const re = /\[PAI_RUNTIME_ERROR_START\](.*?)\[PAI_RUNTIME_ERROR_END\]/;
+    const re = /\[PAI_RUNTIME_ERROR_START\]([\s\S]*?)\[PAI_RUNTIME_ERROR_END\]/;
     return diag.replace(re, '').trim();
   }
 
