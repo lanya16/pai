@@ -130,15 +130,15 @@ export default class Summary extends React.Component {
     const state = getHumanizedJobStateString(jobInfo);
     if (state === 'Failed') {
       const result = [];
-      const spec = jobInfo.jobStatus.appExitSpec;
+      const spec = get(jobInfo, 'jobStatus.appExitSpec');
       // error type
       const type = spec && spec.type;
       if (type) {
         result.push(<HintItem key='type' header='Error Type:' value={spec.type} />);
       }
       // trigger task
-      const role = jobInfo.jobStatus.appExitTriggerTaskRoleName;
-      const idx = jobInfo.jobStatus.appExitTriggerTaskIndex;
+      const role = get(jobInfo, 'jobStatus.appExitTriggerTaskRoleName');
+      const idx = get(jobInfo, 'jobStatus.appExitTriggerTaskIndex');
       if (role) {
         result.push(<HintItem key='task-role' header='Task Role:' value={role} />);
       }
@@ -168,12 +168,12 @@ export default class Summary extends React.Component {
       const solution = [];
       if (runtimeOutput && runtimeOutput.reason) {
         reason.push(
-          <div key='runtime-reason'>{runtimeOutput && runtimeOutput.reason}</div>,
+          <div key='runtime-reason'>{runtimeOutput.reason}</div>,
         );
       }
       if (runtimeOutput && runtimeOutput.solution) {
         solution.push(
-          <div key='runtime-solution'>{runtimeOutput && runtimeOutput.solution}</div>,
+          <div key='runtime-solution'>{runtimeOutput.solution}</div>,
         );
       }
       if (spec && spec.reason) {
@@ -184,7 +184,7 @@ export default class Summary extends React.Component {
       if (spec && spec.solution) {
         solution.push(
           ...spec.solution.map((x, i) => (
-            <div key={`spec-reason-${i}`}>{spec.reason}</div>
+            <div key={`spec-reason-${i}`}>{x}</div>
           )),
         );
       }
