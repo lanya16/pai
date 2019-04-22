@@ -18,6 +18,7 @@
 
 // module dependencies
 const async = require('async');
+const path = require('path');
 const fs = require('fs');
 const unirest = require('unirest');
 const _ = require('lodash');
@@ -35,12 +36,21 @@ const azureEnv = require('../config/azure');
 const paiConfig = require('../config/paiConfig');
 const env = require('../util/env');
 
-const exitInfoList = yaml.safeLoad(process.env[env.exitSpec] || fs.readFileSync('/job-exit-spec-configuration/job-exit-spec.yaml'));
+let exitSpecPath;
+if (process.env[env.exitSpecPath]) {
+  exitSpecPath = process.env[env.exitSpecPath];
+  if (!path.isAbsolute(exitSpecPath)) {
+    exitSpecPath = path.resolve(__dirname, '../..', exitSpecPath);
+  }
+} else {
+  exitSpecPath = '/job-exit-spec-configuration/job-exit-spec.yaml';
+}
+const exitSpecList = yaml.safeLoad(fs.readFileSync(exitSpecPath));
 const positiveFallbackExitCode = 256;
 const negativeFallbackExitCode = -8000;
-const exitInfoMap = {};
-exitInfoList.forEach((val) => {
-  exitInfoMap[val.code] = val;
+const exitSpecMap = {};
+exitSpecList.forEach((val) => {
+  exitSpecMap[val.code] = val;
 });
 
 class Job {
@@ -373,17 +383,17 @@ class Job {
 
   generateExitSpec(code) {
     if (!_.isNil(code)) {
-      if (!_.isNil(exitInfoMap[code])) {
-        return exitInfoMap[code];
+      if (!_.isNil(exitSpecMap[code])) {
+        return exitSpecMap[code];
       } else {
         if (code > 0) {
           return {
-            ...exitInfoMap[positiveFallbackExitCode],
+            ...exitSpecMap[positiveFallbackExitCode],
             code,
           };
         } else {
           return {
-            ...exitInfoMap[negativeFallbackExitCode],
+            ...exitSpecMap[negativeFallbackExitCode],
             code,
           };
         }

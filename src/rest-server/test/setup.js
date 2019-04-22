@@ -31,10 +31,7 @@ process.env.K8S_APISERVER_URI = 'http://kubernetes.test.pai:8080';
 process.env.AZ_RDMA = 'false';
 process.env.DEBUGGING_RESERVATION_SECONDS = '604800';
 
-process.env[env.exitSpec] = `
-- code: 255
-  type: test_type
-`;
+process.env[env.exitSpecPath] = 'test/data/exit-spec.yaml';
 
 const jwt = require('jsonwebtoken');
 const mustache = require('mustache');
