@@ -194,31 +194,34 @@ describe('JobDetail ExitSpec', () => {
 
   // Mock launcher webservice
   before(() => {
+    const resp = JSON.parse(mustache.render(
+      frameworkDetailTemplate,
+      {          
+        'frameworkName': 'test_job',
+        'userName': 'test',
+        'queueName': 'vc3',
+        'applicationId': 'test_job',
+      }
+    ));
+
+    resp.aggregatedFrameworkStatus.frameworkStatus = {
+      ...resp.aggregatedFrameworkStatus.frameworkStatus,
+      applicationExitCode: 255,
+      applicationExitDiagnostics: `
+        [2019-01-01 00:00:00]Exception from container-launch:
+        ExitCodeException exitCode=255: Message1
+          at org.apache.hadoop.util.Shell.runCommand(Shell.java:998)
+        [2019-01-01 00:00:00]Container exited with a non-zero exit code 255. Last 40960 bytes of runtime.pai.agg.error :
+        [PAI_RUNTIME_ERROR_START]
+          exitcode: 255
+        [PAI_RUNTIME_ERROR_END]
+      `,
+    };
+
     nock(launcherWebserviceUri)
-      .get('/v1/Frameworks/test_job')
-      .reply(200, mustache.render(
-        frameworkDetailTemplate,
-        {
-          'aggregatedFrameworkStatus': {
-            frameworkStatus: {
-              applicationExitCode: 255,
-              applicationExitDiagnostics: `
-                [2019-01-01 00:00:00]Exception from container-launch:
-                ExitCodeException exitCode=255: Message1
-                  at org.apache.hadoop.util.Shell.runCommand(Shell.java:998)
-                [2019-01-01 00:00:00]Container exited with a non-zero exit code 255. Last 40960 bytes of runtime.pai.agg.error :
-                [PAI_RUNTIME_ERROR_START]
-                  exitcode: 255
-                [PAI_RUNTIME_ERROR_END]
-              `,
-            },
-          },
-          'frameworkName': 'test_job',
-          'userName': 'test',
-          'queueName': 'vc3',
-          'applicationId': 'test_job',
-        }
-      ));
+      .persist()
+      .get('/v1/Frameworks/test_error_spec')
+      .reply(200, resp);
   });
 
   //
@@ -227,13 +230,13 @@ describe('JobDetail ExitSpec', () => {
 
   it('[P-01] Should return exit messages', (done) => {
     chai.request(server)
-      .get('/api/v1/jobs/test_job')
+      .get('/api/v1/jobs/test_error_spec')
       .end((err, res) => {
         expect(res, 'status code').to.have.status(200);
         expect(res, 'json response').be.json;
         expect(res.body).to.nested.include({
           'jobStatus.appExitMessages.container': 'Message1',
-          'jobStatus.appExitMessages.runtime.exitCode': 255,
+          'jobStatus.appExitMessages.runtime.exitcode': 255,
         });
         done();
       });
@@ -241,13 +244,13 @@ describe('JobDetail ExitSpec', () => {
 
   it('[P-02] Should return static exit info', (done) => {
     chai.request(server)
-      .get('/api/v1/jobs/test_job')
+      .get('/api/v1/jobs/test_error_spec')
       .end((err, res) => {
         expect(res, 'status code').to.have.status(200);
         expect(res, 'json response').be.json;
         expect(res.body).to.have.nested.include({
-          'jobStatus.appStaticExitInfo.code': 255,
-          'jobStatus.appStaticExitInfo.type': 'test_type',
+          'jobStatus.appExitSpec.code': 255,
+          'jobStatus.appExitSpec.type': 'test_type',
         });
         done();
       });

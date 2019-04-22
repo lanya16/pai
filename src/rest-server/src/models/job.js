@@ -371,7 +371,7 @@ class Job {
     );
   }
 
-  generateExitInfo(code) {
+  generateExitSpec(code) {
     if (!_.isNil(code)) {
       if (!_.isNil(exitInfoMap[code])) {
         return exitInfoMap[code];
@@ -467,7 +467,7 @@ class Job {
         appLaunchedTime: frameworkStatus.applicationLaunchedTimestamp,
         appCompletedTime: frameworkStatus.applicationCompletedTimestamp,
         appExitCode: frameworkStatus.applicationExitCode,
-        appExitSpec: this.generateExitInfo(frameworkStatus.applicationExitCode),
+        appExitSpec: this.generateExitSpec(frameworkStatus.applicationExitCode),
         appExitMessages: {
           container: this.extractContainerStderr(frameworkStatus.applicationExitDiagnostics),
           runtime: this.extractRuntimeOutput(frameworkStatus.applicationExitDiagnostics),

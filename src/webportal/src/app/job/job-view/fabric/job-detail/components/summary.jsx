@@ -164,30 +164,16 @@ export default class Summary extends React.Component {
         result.push(<HintItem key='platform-exit-code' header='Platform Exit Code:' value={code} />);
       }
       // reason & solution
-      if (runtimeOutput) {
-        const reason = runtimeOutput.reason;
-        const solution = runtimeOutput.solution;
-        if (reason) {
-          result.push(<HintItem key='reason' header='Reason:' value={reason} />);
-        }
-        if (solution) {
-          result.push(<HintItem key='solution' header='Solution:' value={solution} />);
-        }
-      } else {
-        const containerOutput = get(jobInfo, 'jobStatus.appExitMessages.stderr');
-        if (containerOutput) {
-          result.push(<HintItem key='container-output' header='Container Output:' value={containerOutput} />);
-        }
-        const reason = spec.reason;
-        const solution = spec.solution;
-        if (reason) {
-          result.push(<HintItem key='reason' header='Reason:' value={reason} />);
-        }
-        if (solution) {
-          result.push(<HintItem key='solution' header='Solution:' value={solution} />);
-        }
-      }
-
+      const reason = [
+        runtimeOutput && runtimeOutput.reason,
+        spec.reason,
+      ];
+      const solution = [
+        runtimeOutput && runtimeOutput.solution,
+        spec.solution,
+      ];
+      result.push(<HintItem key='reason' header='Reason:' value={reason} />);
+      result.push(<HintItem key='solution' header='Solution:' value={solution} />);
 
       return (
         <MessageBar messageBarType={MessageBarType.error}>
