@@ -169,7 +169,7 @@ export default class Summary extends React.Component {
         }
         if (runtimeOutput && runtimeOutput.reason) {
           reason.push(
-            <div  key='runtime-reason'>{runtimeOutput.reason}</div>,
+            <div key='runtime-reason'>{runtimeOutput.reason}</div>,
           );
         }
       } else {
@@ -205,7 +205,7 @@ export default class Summary extends React.Component {
         );
       }
       if (!isEmpty(solution)) {
-        result.push(<HintItem key='solution' header='Exit Solution:' value={solution} />);
+        result.push(<HintItem key='solution' header='Exit Solutions:' value={solution} />);
       }
       // trigger task
       const message = get(jobInfo, 'jobStatus.appExitTriggerMessage');
