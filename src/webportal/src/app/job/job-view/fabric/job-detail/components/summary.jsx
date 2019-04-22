@@ -231,7 +231,7 @@ export default class Summary extends React.Component {
       }
 
       return (
-        <MessageBar messageBarType={type}>
+        <MessageBar messageBarType={messageBarType}>
           <div>
             {result}
           </div>
