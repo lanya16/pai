@@ -25,7 +25,7 @@ import {Link} from 'office-ui-fabric-react/lib/Link';
 import {MessageBar, MessageBarType} from 'office-ui-fabric-react/lib/MessageBar';
 import PropTypes from 'prop-types';
 import React from 'react';
-import yaml from 'yaml-js';
+import yaml from 'js-yaml';
 
 import t from '../../tachyons.css';
 
