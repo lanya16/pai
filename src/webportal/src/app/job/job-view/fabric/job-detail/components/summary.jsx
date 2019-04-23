@@ -25,6 +25,7 @@ import {Link} from 'office-ui-fabric-react/lib/Link';
 import {MessageBar, MessageBarType} from 'office-ui-fabric-react/lib/MessageBar';
 import PropTypes from 'prop-types';
 import React from 'react';
+import yaml from 'yaml-js';
 
 import t from '../../tachyons.css';
 
@@ -90,9 +91,29 @@ export default class Summary extends React.Component {
 
   showExitDiagnostics() {
     const {jobInfo} = this.props;
+    const result = [];
+    const spec = jobInfo.jobStatus.appExitSpec;
+    if (spec) {
+      result.push('[Exit Spec]');
+      result.push('');
+      result.push(yaml.safeDump(spec));
+      result.push('');
+    }
+    const diag = jobInfo.jobStatus.appExitDiagnostics;
+    if (diag) {
+      if (spec) {
+        result.push(Array.from({length: 40}, () => '-'));
+        result.push('');
+      }
+      result.push('[Exit Diagnostics]');
+      result.push('');
+      result.push(diag);
+      result.push('');
+    }
+
     this.showEditor('Exit Diagnostics', {
       language: 'text',
-      value: jobInfo.jobStatus.appExitDiagnostics,
+      value: result.join('\n'),
     });
   }
 
@@ -348,7 +369,7 @@ export default class Summary extends React.Component {
               <Link
                 styles={{root: [FontClassNames.mediumPlus]}}
                 href='#'
-                disabled={isNil(jobInfo.jobStatus.appExitDiagnostics)}
+                disabled={isNil(jobInfo.jobStatus.appExitDiagnostics) && isNil(jobInfo.jobStatus.appExitSpec)}
                 onClick={this.showExitDiagnostics}
               >
                 View Exit Diagnostics
