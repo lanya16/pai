@@ -25,7 +25,6 @@ import {Link} from 'office-ui-fabric-react/lib/Link';
 import {MessageBar, MessageBarType} from 'office-ui-fabric-react/lib/MessageBar';
 import PropTypes from 'prop-types';
 import React from 'react';
-import yaml from 'js-yaml';
 
 import t from '../../tachyons.css';
 
@@ -40,6 +39,20 @@ const StoppableStatus = [
   'Running',
   'Waiting',
 ];
+
+const HintItem = ({header, children}) => (
+  <div className={c(t.flex, t.justifyStart)}>
+    <div style={{width: '16rem', minWidth: '16rem', fontWeight: FontWeights.semibold}}>
+      {header}
+    </div>
+    <div>{children}</div>
+  </div>
+);
+
+HintItem.propTypes = {
+  header: PropTypes.string.isRequired,
+  children: PropTypes.node,
+};
 
 export default class Summary extends React.Component {
   constructor(props) {
@@ -77,30 +90,9 @@ export default class Summary extends React.Component {
 
   showExitDiagnostics() {
     const {jobInfo} = this.props;
-    const messages = jobInfo.jobStatus.appExitMessages;
-    const result = [];
-    if (!isEmpty(messages.container)) {
-      result.push('[Container Stderr]');
-      result.push('');
-      result.push(messages.container);
-      result.push('');
-    }
-    if (!isEmpty(messages.runtime)) {
-      result.push('[Runtime Output]');
-      result.push('');
-      result.push(yaml.safeDump(messages.runtime));
-      result.push('');
-    }
-    if (!isEmpty(messages.launcher)) {
-      result.push('[Launcher Output]');
-      result.push('');
-      result.push(messages.launcher);
-      result.push('');
-    }
-
     this.showEditor('Exit Diagnostics', {
       language: 'text',
-      value: result.join('\n'),
+      value: jobInfo.jobStatus.appExitDiagnostics,
     });
   }
 
@@ -112,119 +104,107 @@ export default class Summary extends React.Component {
     });
   }
 
+  getUserFailureHintItems(jobInfo) {
+    const result = [];
+    const runtimeOutput = get(jobInfo, 'jobStatus.appExitMessages.runtime');
+    // reason
+    const reason = [];
+    // static reason
+    const spec = get(jobInfo, 'jobStatus.appExitSpec');
+    if (spec && spec.reason) {
+      reason.push(
+        <div key='spec-reason'>{spec.reason}</div>,
+      );
+    }
+    // dynamic reason
+    const code = jobInfo.jobStatus.appExitCode;
+    if (code > 0) {
+      if (runtimeOutput && runtimeOutput.reason) {
+        reason.push(
+          <div key='runtime-reason'>{runtimeOutput.reason}</div>,
+        );
+      }
+    } else {
+      const launcherOutput = get(jobInfo, 'jobStatus.appExitMessages.launcher');
+      if (launcherOutput) {
+        reason.push(
+          <div key='launcher-reason'>{launcherOutput}</div>,
+        );
+      }
+    }
+    if (!isEmpty(reason)) {
+      result.push(<HintItem key='reason' header='Exit Reason:'>{reason}</HintItem>);
+    }
+    // solution
+    const solution = [];
+    if (runtimeOutput && runtimeOutput.solution) {
+      solution.push(
+        <div key='runtime-solution'>{runtimeOutput.solution}</div>,
+      );
+    }
+    if (spec && spec.solution) {
+      solution.push(
+        ...spec.solution.map((x, i) => (
+          <div key={`spec-reason-${i}`}>{x}</div>
+        )),
+      );
+    }
+    if (!isEmpty(solution)) {
+      result.push(<HintItem key='solution' header='Exit Solutions:'>{solution}</HintItem>);
+    }
+    result.push(<div className={t.h1}></div>);
+    // trigger task
+    const message = get(jobInfo, 'jobStatus.appExitTriggerMessage');
+    const role = get(jobInfo, 'jobStatus.appExitTriggerTaskRoleName');
+    const idx = get(jobInfo, 'jobStatus.appExitTriggerTaskIndex');
+    if (message) {
+      result.push(<HintItem key='trigger-message' header='Exit Trigger Message:'>{message}</HintItem>);
+    }
+    if (role) {
+      result.push(<HintItem key='task-role' header='Exit Trigger Task Role:'>{role}</HintItem>);
+    }
+    if (!isNil(idx)) {
+      result.push(<HintItem key='container-id' header='Exit Trigger Task Index:'>{idx}</HintItem>);
+    }
+    // user exit code
+    if (runtimeOutput) {
+      const userCode = runtimeOutput.originalUserExitCode;
+      if (!isNil(userCode)) {
+        result.push(<HintItem key='user-exit-code' header='Original User Exit Code:'>{userCode}</HintItem>);
+      }
+    }
+
+    return result;
+  }
+
   renderHintMessage() {
     const {jobInfo} = this.props;
     if (!jobInfo) {
       return;
     }
 
-    const HintItem = ({header, value}) => (
-      <div className={c(t.flex, t.justifyStart)}>
-        <div style={{width: '16rem', minWidth: '16rem', fontWeight: FontWeights.semibold}}>
-          {header}
-        </div>
-        <div>{value}</div>
-      </div>
-    );
-
     const state = getHumanizedJobStateString(jobInfo);
-    if (state === 'Failed' || state === 'Succeeded' || state === 'Stopped') {
+    if (state === 'Failed' || state === 'Stopped') {
       const result = [];
       const spec = jobInfo.jobStatus.appExitSpec;
-      const runtimeOutput = get(jobInfo, 'jobStatus.appExitMessages.runtime');
+      const type = spec && spec.type;
       // exit code
       const code = jobInfo.jobStatus.appExitCode;
-      result.push(<HintItem key='platform-exit-code' header='Exit Code:' value={code} />);
-      if (runtimeOutput) {
-        const userCode = runtimeOutput.originalUserExitCode;
-        if (!isNil(userCode)) {
-          result.push(<HintItem key='user-exit-code' header='Original User Exit Code:' value={userCode} />);
-        }
+      result.push(<HintItem key='platform-exit-code' header='Exit Code:'>{code}</HintItem>);
+      // type
+      if (type) {
+        result.push(<HintItem key='type' header='Exit Type:'>{type}</HintItem>);
       }
-      // info
-      if (spec) {
-        if (spec.phrase) {
-          result.push(<HintItem key='phrase' header='Exit Phrase:' value={spec.phrase} />);
-        }
-        if (spec.type) {
-          result.push(<HintItem key='type' header='Exit Type:' value={spec.type} />);
-        }
-        if (spec.reaction) {
-          result.push(<HintItem key='reaction' header='Exit Reaction:' value={spec.reaction} />);
-        }
-      }
-      // reason
-      const reason = [];
-      if (spec && spec.reason) {
-        reason.push(
-          <div key='spec-reason'>{spec.reason}</div>,
-        );
-      }
-      if (code > 0) {
-        const containerOutput = get(jobInfo, 'jobStatus.appExitMessages.container');
-        if (containerOutput) {
-          reason.push(
-            <div key='container-reason'>{containerOutput}</div>,
-          );
-        }
-        if (runtimeOutput && runtimeOutput.reason) {
-          reason.push(
-            <div key='runtime-reason'>{runtimeOutput.reason}</div>,
-          );
-        }
+      if (type === 'USER_FAILURE') {
+        result.push(...this.getUserFailureHintItems(jobInfo));
       } else {
-        const launcherOutput = get(jobInfo, 'jobStatus.appExitMessages.launcher');
-        if (launcherOutput) {
-          reason.push(
-            <div style={{whiteSpace: 'pre-wrap'}} key='launcher-reason'>{launcherOutput}</div>,
-          );
-        }
-      }
-      if (!isEmpty(reason)) {
-        result.push(<HintItem key='reason' header='Exit Reason:' value={reason} />);
-      }
-      // repro
-      if (spec && !isEmpty(spec.repro)) {
-        const repro = spec.repro.map((x, i) => (
-          <div key={`spec-reason-${i}`}>{x}</div>
-        ));
-        result.push(<HintItem key='repro' header='Exit Reproduce Steps:' value={repro} />);
-      }
-      // solution
-      const solution = [];
-      if (runtimeOutput && runtimeOutput.solution) {
-        solution.push(
-          <div key='runtime-solution'>{runtimeOutput.solution}</div>,
-        );
-      }
-      if (spec && spec.solution) {
-        solution.push(
-          ...spec.solution.map((x, i) => (
-            <div key={`spec-reason-${i}`}>{x}</div>
-          )),
-        );
-      }
-      if (!isEmpty(solution)) {
-        result.push(<HintItem key='solution' header='Exit Solutions:' value={solution} />);
-      }
-      // trigger task
-      const message = get(jobInfo, 'jobStatus.appExitTriggerMessage');
-      const role = get(jobInfo, 'jobStatus.appExitTriggerTaskRoleName');
-      const idx = get(jobInfo, 'jobStatus.appExitTriggerTaskIndex');
-      if (message) {
-        result.push(<HintItem key='trigger-message' header='Exit Trigger Message:' value={message} />);
-      }
-      if (role) {
-        result.push(<HintItem key='task-role' header='Exit Trigger Task Role:' value={role} />);
-      }
-      if (!isNil(idx)) {
-        result.push(<HintItem key='container-id' header='Exit Trigger Task Index:' value={idx} />);
+        result.push(<HintItem key='solution' header='Exit Solutions:'>
+          Please send the <Link onClick={this.showExitDiagnostics}>exit diagnostics</Link> to your administrator for further investigation.
+        </HintItem>);
       }
 
       let messageBarType;
-      if (state === 'Succeeded') {
-        messageBarType = MessageBarType.success;
-      } else if (state === 'Failed') {
+      if (state === 'Failed') {
         messageBarType = MessageBarType.error;
       } else {
         messageBarType = MessageBarType.info;
@@ -243,30 +223,14 @@ export default class Summary extends React.Component {
         return (
           <MessageBar messageBarType={MessageBarType.warning}>
             <div>
-              <div>
-                <span className={c(t.w4, t.dib)} style={{fontWeight: FontWeights.semibold}}>
-                  Error Type:
-                </span>
-                <span className={c(t.ml2)}>
-                  Resource Conflicts
-                </span>
-              </div>
-              <div>
-                <span className={c(t.w4, t.dib)} style={{fontWeight: FontWeights.semibold}}>
-                  Conflict Count:
-                </span>
-                <span className={c(t.ml2)}>
+              <HintItem key='conflict-retry-count' header='Conflict Count:'>
                   {resourceRetries}
-                </span>
-              </div>
-              <div>
-                <span className={c(t.w4, t.dib)} style={{fontWeight: FontWeights.semibold}}>
-                  Resolution:
-                </span>
-                <span className={c(t.ml2)}>
+              </HintItem>
+              <HintItem key='resolution' header='Resolution:'>
+                <div>
                   Please adjust the resource requirement in your <Link onClick={this.showJobConfig}>job config</Link>, or wait till other jobs release more resources back to the system.
-                </span>
-              </div>
+                </div>
+              </HintItem>
             </div>
           </MessageBar>
         );
@@ -384,7 +348,7 @@ export default class Summary extends React.Component {
               <Link
                 styles={{root: [FontClassNames.mediumPlus]}}
                 href='#'
-                disabled={isNil(jobInfo.jobStatus.appExitSpec)}
+                disabled={isNil(jobInfo.jobStatus.appExitDiagnostics)}
                 onClick={this.showExitDiagnostics}
               >
                 View Exit Diagnostics
