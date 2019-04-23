@@ -205,7 +205,7 @@ export default class Summary extends React.Component {
     }
 
     const state = getHumanizedJobStateString(jobInfo);
-    if (state === 'Failed' || state === 'Stopped') {
+    if (state === 'Failed') {
       const result = [];
       const spec = jobInfo.jobStatus.appExitSpec;
       const type = spec && spec.type;
