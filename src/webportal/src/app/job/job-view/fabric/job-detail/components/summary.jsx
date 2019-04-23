@@ -195,7 +195,7 @@ export default class Summary extends React.Component {
       if (type) {
         result.push(<HintItem key='type' header='Exit Type:'>{type}</HintItem>);
       }
-      if (type === 'USER_FAILURE') {
+      if (type === 'USER_FAILURE' || type === 'UNKNOWN_FAILURE') {
         result.push(...this.getUserFailureHintItems(jobInfo));
       } else {
         result.push(<HintItem key='solution' header='Exit Solutions:'>
