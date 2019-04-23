@@ -102,7 +102,7 @@ export default class Summary extends React.Component {
     const diag = jobInfo.jobStatus.appExitDiagnostics;
     if (diag) {
       if (spec) {
-        result.push(Array.from({length: 40}, () => '-'));
+        result.push(Array.from({length: 80}, () => '-').join(''));
         result.push('');
       }
       result.push('[Exit Diagnostics]');
