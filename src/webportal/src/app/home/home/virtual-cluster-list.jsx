@@ -21,7 +21,7 @@ import {Stack, ColorClassNames, FontClassNames, PersonaCoin, getTheme} from 'off
 import React from 'react';
 
 import Card from './card';
-import {statusColorMapping} from '../../components/theme';
+import {statusColor} from '../../components/theme';
 
 import t from '../../components/tachyons.scss';
 
@@ -30,9 +30,9 @@ const VirtualClusterItem = ({name, info, totalGpu}) => {
   const percentage = availableGpu / totalGpu;
   let color;
   if (availableGpu === 0) {
-    color = statusColorMapping.failed;
+    color = statusColor.failed;
   } else {
-    color = statusColorMapping.succeeded;
+    color = statusColor.succeeded;
   }
 
   const {spacing} = getTheme();
