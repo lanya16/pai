@@ -80,7 +80,7 @@ const Home = () => {
       height: auto;
       @media screen and (max-width: 64em) {
         width: 100%;
-        height: 32rem;
+        height: 320px;
       }
     `;
 
