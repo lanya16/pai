@@ -97,7 +97,7 @@ class JobDetail extends React.Component {
       return Object.keys(jobInfo.taskRoles).map((key) => (
         <TaskRole
           key={key}
-          className={t.mt3}
+          className={t.mb3}
           taskInfo={jobInfo.taskRoles[key]}
           jobStatus={getHumanizedJobStateString(jobInfo)}
           sshInfo={sshInfo}
@@ -110,7 +110,7 @@ class JobDetail extends React.Component {
         return Object.keys(jobConfig.taskRoles).map((key) => (
           <TaskRole
             key={key}
-            className={t.mt3}
+            className={t.mb3}
             jobStatus='Waiting'
             sshInfo={sshInfo}
             taskConfig={jobConfig[key]}
@@ -120,7 +120,7 @@ class JobDetail extends React.Component {
         return jobConfig.taskRoles.map((config) => (
           <TaskRole
             key={config.name}
-            className={t.mt3}
+            className={t.mb3}
             jobStatus='Waiting'
             sshInfo={sshInfo}
             taskConfig={config}
@@ -138,17 +138,19 @@ class JobDetail extends React.Component {
       return <SpinnerLoading />;
     } else {
       return (
-        <div className={classNames(t.w100, t.ph4, t.pv3, FontClassNames.medium)}>
+        <div className={classNames(t.w100, t.ph5, t.pv4, FontClassNames.medium)}>
           <Top />
           <Summary
-            className={t.mt3}
+            className={t.mt4}
             jobInfo={jobInfo}
             jobConfig={jobConfig}
             reloading={reloading}
             onStopJob={this.stop}
             onReload={this.reload}
           />
-          {this.renderTaskRoles()}
+          <div className={t.mt4}>
+            {this.renderTaskRoles()}
+          </div>
         </div>
       );
     }

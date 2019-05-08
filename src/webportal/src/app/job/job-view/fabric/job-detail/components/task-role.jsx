@@ -102,7 +102,7 @@ export default class TaskRole extends React.Component {
       <div className={className}>
         {/* summary */}
         <Card>
-          <div className={c(t.pv3, t.flex, t.itemsCenter, t.justifyBetween)} style={{paddingLeft: 32, paddingRight: 32}}>
+          <div className={c(t.pv4, t.ph5, t.flex, t.itemsCenter, t.justifyBetween)}>
             {/* left */}
             <div className={c(t.flex, t.itemsCenter)}>
               <div className={c(FontClassNames.large)}>
@@ -131,7 +131,7 @@ export default class TaskRole extends React.Component {
           </div>
           {containerListExpanded && (
             <TaskRoleContainerList
-              style={{paddingLeft: 32, paddingRight: 32}}
+              className={t.ph5}
               taskInfo={taskInfo}
               taskConfig={taskConfig}
               jobStatus={jobStatus}
